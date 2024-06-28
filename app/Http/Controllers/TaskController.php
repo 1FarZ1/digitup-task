@@ -3,16 +3,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
-
+use App\Http\Requests\TaskCreateRequest;
+use App\Http\Requests\TaskUpdateRequest;
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'admin') {
-            return Task::withTrashed()->get();
+        if ($request->user()->role === 'admin') {
+            $tasks = Task::withTrashed()->get();
+        } else {
+            $tasks = Task::where('user_id', $request->user()->id)
+                         ->orWhereNull('deleted_at')
+                         ->get();
         }
 
-        return Task::where('user_id', $request->user()->id)->orWhereNull('deleted_at')->get();
+        return response()->json($tasks,200);
     }
 
     public function show(Request $request, $id)
@@ -26,22 +31,18 @@ class TaskController extends Controller
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    public function store(Request $request)
+    public function store(TaskCreateRequest  $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'status' => 'required|in:pending,completed',
-        ]);
+        $validatedData = $request->validated();
 
+        $due_date = \Carbon\Carbon::createFromFormat('m/d/Y', $request->due_date)->format('Y-m-d');
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
+            'due_date' => $due_date,
             'user_id' => $request->user()->id,
         ]);
+
 
         return response()->json($task, 201);
     }
@@ -73,7 +74,9 @@ class TaskController extends Controller
         if ($request->user()->role != 'admin' && $task->user_id != $request->user()->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-
+        if ($task->trashed()) {
+            return response()->json(['message' => 'Task already deleted'], 400);
+        }
         $task->delete();
 
         return response()->json(null, 204);
