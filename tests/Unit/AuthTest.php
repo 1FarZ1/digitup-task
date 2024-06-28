@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

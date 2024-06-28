@@ -9,6 +9,7 @@ use App\Http\Requests\TaskUpdateRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
@@ -49,7 +50,7 @@ class TaskController extends Controller
     public function store(TaskCreateRequest $request)
     {
         try {
-            $validatedData = $request->validated();
+           $request->validated();
 
             $due_date = Carbon::createFromFormat('m/d/Y', $request->due_date)->format('Y-m-d');
             $task = Task::create([
@@ -67,23 +68,22 @@ class TaskController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(TaskUpdateRequest $request, $id)
     {
         try {
-            $task = Task::withTrashed()->findOrFail($id);
+            $task = Task::findOrFail($id);
 
             if ($request->user()->role != 'admin' && $task->user_id != $request->user()->id) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
+            $request->validated();
 
-            $request->validate([
-                'title' => 'nullable|string|max:255',
-                'description' => 'nullable|string',
-                'due_date' => 'nullable|date',
-                'status' => 'nullable|in:pending,completed',
-            ]);
 
-            $task->update($request->all());
+            
+            $task->update(
+                $request->all()
+            );
+
 
             return response()->json($task, 200);
         } catch (ModelNotFoundException $e) {
