@@ -20,8 +20,8 @@ class TaskController extends Controller
                 $tasks = Task::withTrashed()->get();
             } else {
                 $tasks = Task::where('user_id', $request->user()->id)
-                             ->orWhereNull('deleted_at')
-                             ->get();
+                ->whereNull('deleted_at')
+                ->get();
             }
 
             return response()->json($tasks, 200);
@@ -79,7 +79,7 @@ class TaskController extends Controller
             $request->validated();
 
 
-            
+
             $task->update(
                 $request->all()
             );
