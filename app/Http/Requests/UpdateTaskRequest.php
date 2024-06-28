@@ -14,9 +14,10 @@ class TaskCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'due_date' => 'required|date',
+            'due_date' => 'nullable|date_format:m/d/Y',
+
         ];
     }
 }
