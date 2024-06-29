@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains my solution to the Digitup backend tasks. It showcases the implementation of various features such as authentication, task management, role-based access control, unit and integration testing, and API documentation.
+This repository contains my solution to the Digitup company backend tasks. It showcases the implementation of various features such as authentication, task management, role-based access control, unit and integration testing, and API documentation.
 
 ## Features
 
